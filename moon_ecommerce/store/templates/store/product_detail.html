@@ -1,0 +1,10 @@
+{% extends 'store/base.html' %}
+{% block content %}
+    <h1>{{ jewelry.name }}</h1>
+    {% if jewelry.image %}
+    <img src="{{ jewelry.image.url }}" alt="{{ jewelry.name }}" style="max-width: 300px;">
+    {% endif %}
+    <p>{{ jewelry.description }}</p>
+    <p><strong>Price:</strong> ${{ jewelry.price }}</p>
+    <a href="{% url 'add_to_cart' jewelry.id %}" class="btn btn-success">Add to Cart</a>
+{% endblock %}
