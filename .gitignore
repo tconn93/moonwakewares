@@ -207,3 +207,21 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Static files
+staticfiles/
+moon_ecommerce/staticfiles/
+
+# Local database
+*.sqlite3
+db.sqlite3
+
+
+deploy.sh
+DEPLOYMENT.md
+JENKINS-QUICKSTART.md
+Jenkinsfile
+README-JENKINS.md
+APACHE-SETUP.md
+apache-moonwakewares.conf
+moon_ecommerce/media/jewelry_images/*
