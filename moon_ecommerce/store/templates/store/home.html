@@ -1,6 +1,440 @@
 {% extends 'store/base.html' %}
+
+{% block extra_css %}
+<style>
+    /* Door Opening Animation */
+    .door-intro {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .door-intro.active {
+        pointer-events: all;
+    }
+
+    .door-intro.hidden {
+        display: none;
+    }
+
+    .door-left, .door-right {
+        position: absolute;
+        top: 0;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(90deg,
+            #3e2723 0%,
+            #4e342e 10%,
+            #5d4037 20%,
+            #4e342e 30%,
+            #3e2723 40%,
+            #4e342e 50%,
+            #5d4037 60%,
+            #4e342e 70%,
+            #3e2723 80%,
+            #4e342e 90%,
+            #3e2723 100%
+        );
+        box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: 10;
+    }
+
+    .door-left {
+        left: 0;
+        border-right: 3px solid #2c1810;
+        box-shadow:
+            inset -10px 0 20px rgba(0,0,0,0.4),
+            inset 0 0 50px rgba(0,0,0,0.3);
+    }
+
+    .door-right {
+        right: 0;
+        border-left: 3px solid #2c1810;
+        box-shadow:
+            inset 10px 0 20px rgba(0,0,0,0.4),
+            inset 0 0 50px rgba(0,0,0,0.3);
+    }
+
+    /* Wood grain effect */
+    .door-left::before, .door-right::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background:
+            repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.1) 2px,
+                rgba(0,0,0,0.1) 4px
+            ),
+            repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 50px,
+                rgba(0,0,0,0.05) 50px,
+                rgba(0,0,0,0.05) 100px
+            );
+        opacity: 0.5;
+    }
+
+    /* Door handles */
+    .door-left::after, .door-right::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 60px;
+        height: 15px;
+        background: linear-gradient(180deg, #b8860b 0%, #8b6914 50%, #b8860b 100%);
+        border-radius: 7px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .door-left::after {
+        right: 30px;
+    }
+
+    .door-right::after {
+        left: 30px;
+    }
+
+    .door-intro.opening .door-left {
+        transform: translateX(-100%);
+    }
+
+    .door-intro.opening .door-right {
+        transform: translateX(100%);
+    }
+
+    /* Logo reveal with smoke effect */
+    .logo-reveal {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 5;
+        opacity: 0;
+        animation: fadeInSmoke 2s ease-in forwards;
+        animation-delay: 0.5s;
+    }
+
+    .logo-reveal img {
+        max-width: 400px;
+        width: 80vw;
+        height: auto;
+        filter: drop-shadow(0 0 30px rgba(212, 175, 55, 0.6));
+    }
+
+    @keyframes fadeInSmoke {
+        0% {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+            filter: blur(20px);
+        }
+        50% {
+            opacity: 1;
+            filter: blur(5px);
+        }
+        100% {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            filter: blur(0);
+        }
+    }
+
+    /* Smoke particles */
+    .smoke-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 6;
+        pointer-events: none;
+    }
+
+    .smoke {
+        position: absolute;
+        bottom: -100px;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: rise 4s ease-in infinite;
+        opacity: 0;
+    }
+
+    .smoke:nth-child(1) {
+        left: 20%;
+        animation-delay: 0s;
+        animation-duration: 5s;
+    }
+
+    .smoke:nth-child(2) {
+        left: 40%;
+        animation-delay: 0.5s;
+        animation-duration: 6s;
+    }
+
+    .smoke:nth-child(3) {
+        left: 60%;
+        animation-delay: 1s;
+        animation-duration: 5.5s;
+    }
+
+    .smoke:nth-child(4) {
+        left: 80%;
+        animation-delay: 1.5s;
+        animation-duration: 6.5s;
+    }
+
+    @keyframes rise {
+        0% {
+            bottom: -100px;
+            opacity: 0;
+            transform: translateX(0) scale(1);
+        }
+        25% {
+            opacity: 0.4;
+        }
+        50% {
+            opacity: 0.6;
+            transform: translateX(50px) scale(1.5);
+        }
+        75% {
+            opacity: 0.3;
+        }
+        100% {
+            bottom: 100%;
+            opacity: 0;
+            transform: translateX(-50px) scale(2);
+        }
+    }
+
+    /* Dark smoky background */
+    .smoke-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+        z-index: 1;
+    }
+
+    /* Hide main content initially */
+    .main-content {
+        opacity: 0;
+        transition: opacity 1s ease-in;
+    }
+
+    .main-content.visible {
+        opacity: 1;
+    }
+
+
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 6rem 0;
+        margin-bottom: 4rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .hero-section p {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.95;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        color: var(--accent-color);
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .cta-section {
+        background-color: var(--bg-light);
+        padding: 4rem 0;
+        margin-top: 4rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .cta-section h2 {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-    <h1>Welcome to Our Handmade Jewelry Shop</h1>
-    <p>Discover unique, handcrafted jewelry pieces.</p>
-    <a href="{% url 'product_list' %}" class="btn btn-primary">Shop Now</a>
+<!-- Door Opening Animation -->
+<div class="door-intro active" id="doorIntro">
+    <div class="smoke-background"></div>
+
+    <!-- Smoke particles -->
+    <div class="smoke-container">
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+    </div>
+
+    <!-- Logo reveal -->
+    <div class="logo-reveal">
+        <img src="/media/moonwakewares.png" alt="Moonwakewares">
+    </div>
+
+    <!-- Doors -->
+    <div class="door-left"></div>
+    <div class="door-right"></div>
+</div>
+
+<!-- Main page content -->
+<div class="main-content" id="mainContent">
+<div class="hero-section">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1>Exquisite Handcrafted Jewelry</h1>
+                <p class="lead">Discover unique pieces that tell your story. Each item is crafted with passion and precision for your special moments.</p>
+                <a href="{% url 'product_list' %}" class="btn btn-light btn-lg px-5">Explore Collection</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <h2 class="section-title">Why Choose Moonwakewares</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <i class="bi bi-hand-thumbs-up feature-icon"></i>
+                <h4>Handcrafted Quality</h4>
+                <p class="text-muted">Every piece is meticulously handcrafted with attention to detail and superior craftsmanship.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <i class="bi bi-gem feature-icon"></i>
+                <h4>Unique Designs</h4>
+                <p class="text-muted">One-of-a-kind designs that you won't find anywhere else. Stand out with distinctive jewelry.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <i class="bi bi-heart feature-icon"></i>
+                <h4>Made with Love</h4>
+                <p class="text-muted">Created for a charitable cause, each purchase supports meaningful community initiatives.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="cta-section">
+        <h2>Ready to Find Your Perfect Piece?</h2>
+        <p class="lead text-muted mb-4">Browse our collection and discover jewelry that speaks to you.</p>
+        <a href="{% url 'product_list' %}" class="btn btn-primary btn-lg">Shop Now</a>
+    </div>
+</div>
+</div>
+<!-- End main content -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if animation has already been shown in this session
+    const animationShown = sessionStorage.getItem('doorAnimationShown');
+
+    const doorIntro = document.getElementById('doorIntro');
+    const mainContent = document.getElementById('mainContent');
+
+    if (animationShown === 'true') {
+        // Skip animation if already shown
+        doorIntro.classList.add('hidden');
+        mainContent.classList.add('visible');
+    } else {
+        // Show animation
+        setTimeout(function() {
+            doorIntro.classList.add('opening');
+        }, 500);
+
+        // After doors open and logo reveals (3.5 seconds), fade to main content
+        setTimeout(function() {
+            mainContent.classList.add('visible');
+        }, 3500);
+
+        // Remove door intro completely after fade
+        setTimeout(function() {
+            doorIntro.classList.add('hidden');
+            // Mark animation as shown for this session
+            sessionStorage.setItem('doorAnimationShown', 'true');
+        }, 4500);
+    }
+});
+</script>
 {% endblock %}

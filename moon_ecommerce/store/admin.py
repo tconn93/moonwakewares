@@ -20,9 +20,9 @@ class JewelryAdmin(admin.ModelAdmin):
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ('user', 'created_at', 'updated_at', 'total_price')
+    list_display = ('user', 'session_key', 'created_at', 'updated_at', 'total_price')
     list_filter = ('created_at', 'updated_at')
-    search_fields = ('user__username',)
+    search_fields = ('user__username', 'session_key')
     readonly_fields = ('created_at', 'updated_at', 'total_price')
     
     def get_queryset(self, request):
