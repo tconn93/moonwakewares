@@ -119,6 +119,17 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Square Payment Gateway Configuration
+SQUARE_ACCESS_TOKEN = config('SQUARE_ACCESS_TOKEN')
+SQUARE_APPLICATION_ID = config('SQUARE_APPLICATION_ID')
+SQUARE_LOCATION_ID = config('SQUARE_LOCATION_ID')
+SQUARE_ENVIRONMENT = config('SQUARE_ENVIRONMENT', default='sandbox')  # 'sandbox' or 'production'
+
+# Authentication settings
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 

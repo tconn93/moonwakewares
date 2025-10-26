@@ -1,0 +1,186 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Sign Up - Moonwakewares{% endblock %}
+
+{% block extra_css %}
+<style>
+    .signup-section {
+        padding: 5rem 0;
+        min-height: 60vh;
+    }
+
+    .signup-card {
+        max-width: 500px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        padding: 3rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+
+    .signup-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .signup-header h2 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .signup-header p {
+        color: var(--text-light);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-control {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 2px solid #dee2e6;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.1);
+    }
+
+    .signup-btn {
+        width: 100%;
+        padding: 0.875rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+
+    .helper-links {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .helper-links a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .helper-links a:hover {
+        color: var(--accent-color);
+    }
+
+    .form-text {
+        font-size: 0.875rem;
+        color: var(--text-light);
+        margin-top: 0.25rem;
+    }
+
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .errorlist li {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+
+    label {
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container signup-section">
+    <div class="signup-card">
+        <div class="signup-header">
+            <h2><i class="bi bi-person-plus"></i> Create Account</h2>
+            <p>Join Moonwakewares to start shopping</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <small class="form-text">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password1.id_for_label }}">Password</label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password1.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <small class="form-text">
+                        Your password must contain at least 8 characters and can't be entirely numeric.
+                    </small>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password2.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <small class="form-text">Enter the same password as before, for verification.</small>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary signup-btn">
+                <i class="bi bi-person-check"></i> Create Account
+            </button>
+        </form>
+
+        <div class="helper-links">
+            <small class="text-muted">
+                Already have an account? <a href="{% url 'login' %}?next={{ request.GET.next }}">Login here</a>
+            </small>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Style the form fields */
+    #id_username, #id_password1, #id_password2 {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 2px solid #dee2e6;
+        font-size: 1rem;
+    }
+
+    #id_username:focus, #id_password1:focus, #id_password2:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.1);
+    }
+</style>
+{% endblock %}

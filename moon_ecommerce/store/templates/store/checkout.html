@@ -1,0 +1,357 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Checkout - Moonwakewares{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        background-color: var(--bg-light);
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 0;
+    }
+
+    .checkout-section {
+        padding-bottom: 3rem;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .form-section h3 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .order-summary {
+        background-color: var(--bg-light);
+        border-radius: 12px;
+        padding: 2rem;
+        position: sticky;
+        top: 100px;
+    }
+
+    .order-summary h3 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        padding-top: 1rem;
+        margin-top: 1rem;
+        border-top: 2px solid #dee2e6;
+    }
+
+    .summary-total .amount {
+        color: var(--accent-color);
+    }
+
+    #card-container {
+        min-height: 100px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1><i class="bi bi-credit-card"></i> Checkout</h1>
+    </div>
+</div>
+
+<div class="container checkout-section">
+    <form id="payment-form" method="post" action="{% url 'process_payment' %}">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Buyer Information -->
+                <div class="form-section">
+                    <h3><i class="bi bi-person"></i> Buyer Information</h3>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="full_name" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user_email }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="form-section">
+                    <h3><i class="bi bi-truck"></i> Shipping Address</h3>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="shipping_street" class="form-label">Street Address *</label>
+                            <input type="text" class="form-control" id="shipping_street" name="shipping_street" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="shipping_city" class="form-label">City *</label>
+                            <input type="text" class="form-control" id="shipping_city" name="shipping_city" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="shipping_state" class="form-label">State *</label>
+                            <input type="text" class="form-control" id="shipping_state" name="shipping_state" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="shipping_zip" class="form-label">ZIP Code *</label>
+                            <input type="text" class="form-control" id="shipping_zip" name="shipping_zip" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="shipping_country" class="form-label">Country *</label>
+                            <input type="text" class="form-control" id="shipping_country" name="shipping_country" value="USA" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Address -->
+                <div class="form-section">
+                    <h3><i class="bi bi-receipt"></i> Billing Address</h3>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="same_as_shipping" checked>
+                            <label class="form-check-label" for="same_as_shipping">
+                                Same as shipping address
+                            </label>
+                        </div>
+                    </div>
+                    <div id="billing-fields">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="billing_street" class="form-label">Street Address *</label>
+                                <input type="text" class="form-control" id="billing_street" name="billing_street">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="billing_city" class="form-label">City *</label>
+                                <input type="text" class="form-control" id="billing_city" name="billing_city">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="billing_state" class="form-label">State *</label>
+                                <input type="text" class="form-control" id="billing_state" name="billing_state">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="billing_zip" class="form-label">ZIP Code *</label>
+                                <input type="text" class="form-control" id="billing_zip" name="billing_zip">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="billing_country" class="form-label">Country *</label>
+                                <input type="text" class="form-control" id="billing_country" name="billing_country" value="USA">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Information -->
+                <div class="form-section">
+                    <h3><i class="bi bi-credit-card-2-front"></i> Payment Information</h3>
+                    <div id="card-container">
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-hourglass-split"></i> Loading payment form...
+                        </div>
+                    </div>
+                    <input type="hidden" id="source_id" name="source_id">
+                    <div id="payment-status-container"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="order-summary">
+                    <h3>Order Summary</h3>
+                    {% for item in cart.cartitem_set.all %}
+                    <div class="summary-item">
+                        <div>
+                            <strong>{{ item.jewelry.name }}</strong><br>
+                            <small class="text-muted">Qty: {{ item.quantity }} × ${{ item.jewelry.price }}</small>
+                        </div>
+                        <div>${{ item.total_price }}</div>
+                    </div>
+                    {% endfor %}
+                    <div class="summary-total">
+                        <span>Total</span>
+                        <span class="amount">${{ cart.total_price }}</span>
+                    </div>
+                    <button type="submit" id="card-button" class="btn btn-success w-100 mt-3" disabled>
+                        <i class="bi bi-lock"></i> Complete Purchase
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if SQUARE_ENVIRONMENT == 'production' %}
+<script type="text/javascript" src="https://web.squarecdn.com/v1/square.js"></script>
+{% else %}
+<script type="text/javascript" src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+{% endif %}
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const appId = '{{ SQUARE_APPLICATION_ID }}';
+        const locationId = '{{ SQUARE_LOCATION_ID }}';
+
+        console.log('Square App ID:', appId);
+        console.log('Square Location ID:', locationId);
+
+        // Check if credentials are provided
+        if (!appId || appId === '' || appId === 'your_square_application_id_here') {
+            document.getElementById('card-container').innerHTML = '<div class="alert alert-warning"><strong>Configuration Error:</strong> Square Application ID is not configured. Please add your Square credentials to the .env file.</div>';
+            return;
+        }
+
+        if (!locationId || locationId === '' || locationId === 'your_square_location_id_here') {
+            document.getElementById('card-container').innerHTML = '<div class="alert alert-warning"><strong>Configuration Error:</strong> Square Location ID is not configured. Please add your Square credentials to the .env file.</div>';
+            return;
+        }
+
+        if (!window.Square) {
+            document.getElementById('card-container').innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> Square.js failed to load. Please check your internet connection.</div>';
+            console.error('Square.js failed to load properly');
+            return;
+        }
+
+        let payments;
+        try {
+            payments = window.Square.payments(appId, locationId);
+        } catch (e) {
+            document.getElementById('card-container').innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> Failed to initialize Square Payments. ' + e.message + '</div>';
+            console.error('Initializing Square Payments failed', e);
+            return;
+        }
+
+        let card;
+        try {
+            card = await payments.card();
+            await card.attach('#card-container');
+            document.getElementById('card-button').disabled = false;
+            console.log('Square card form loaded successfully');
+        } catch (e) {
+            document.getElementById('card-container').innerHTML = '<div class="alert alert-danger"><strong>Error:</strong> Failed to load card form. ' + e.message + '</div>';
+            console.error('Initializing Card failed', e);
+            return;
+        }
+
+        // Handle form submission
+        const paymentForm = document.getElementById('payment-form');
+        paymentForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            console.log('Form submitted');
+
+            const cardButton = document.getElementById('card-button');
+            cardButton.disabled = true;
+            cardButton.innerHTML = '<i class="bi bi-hourglass"></i> Processing...';
+
+            try {
+                console.log('Tokenizing card...');
+                const result = await card.tokenize();
+                console.log('Tokenization result:', result);
+
+                if (result.status === 'OK') {
+                    console.log('Token received:', result.token);
+                    document.getElementById('source_id').value = result.token;
+                    console.log('Submitting form...');
+                    paymentForm.submit();
+                } else {
+                    cardButton.disabled = false;
+                    cardButton.innerHTML = '<i class="bi bi-lock"></i> Complete Purchase';
+                    let errorMessage = 'Tokenization failed. Please check your card details.';
+                    if (result.errors) {
+                        errorMessage = result.errors.map(error => error.message).join(', ');
+                        console.error('Tokenization errors:', result.errors);
+                    }
+                    alert(errorMessage);
+                }
+            } catch (e) {
+                console.error('Error during form submission:', e);
+                cardButton.disabled = false;
+                cardButton.innerHTML = '<i class="bi bi-lock"></i> Complete Purchase';
+                alert('An error occurred. Please try again. Check console for details.');
+            }
+        });
+
+        // Handle "same as shipping" checkbox
+        const sameAsShipping = document.getElementById('same_as_shipping');
+        const billingFields = document.getElementById('billing-fields');
+
+        function toggleBillingFields() {
+            if (sameAsShipping.checked) {
+                billingFields.style.display = 'none';
+                // Copy shipping to billing
+                document.getElementById('billing_street').value = document.getElementById('shipping_street').value;
+                document.getElementById('billing_city').value = document.getElementById('shipping_city').value;
+                document.getElementById('billing_state').value = document.getElementById('shipping_state').value;
+                document.getElementById('billing_zip').value = document.getElementById('shipping_zip').value;
+                document.getElementById('billing_country').value = document.getElementById('shipping_country').value;
+
+                // Remove required attribute
+                billingFields.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
+            } else {
+                billingFields.style.display = 'block';
+                // Add required attribute
+                billingFields.querySelectorAll('input').forEach(input => input.setAttribute('required', 'required'));
+            }
+        }
+
+        sameAsShipping.addEventListener('change', toggleBillingFields);
+
+        // Sync shipping fields to billing when "same as shipping" is checked
+        ['shipping_street', 'shipping_city', 'shipping_state', 'shipping_zip', 'shipping_country'].forEach(fieldId => {
+            document.getElementById(fieldId).addEventListener('input', function() {
+                if (sameAsShipping.checked) {
+                    const billingFieldId = fieldId.replace('shipping_', 'billing_');
+                    document.getElementById(billingFieldId).value = this.value;
+                }
+            });
+        });
+
+        // Initialize billing fields state
+        toggleBillingFields();
+    });
+</script>
+{% endblock %}
