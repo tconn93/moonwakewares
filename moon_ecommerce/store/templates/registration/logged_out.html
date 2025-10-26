@@ -1,0 +1,42 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Logged Out - Moonwakewares{% endblock %}
+
+{% block extra_css %}
+<style>
+    .logout-section {
+        padding: 5rem 0;
+        text-align: center;
+        min-height: 60vh;
+    }
+
+    .logout-icon {
+        font-size: 5rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .logout-section h2 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container logout-section">
+    <i class="bi bi-check-circle logout-icon"></i>
+    <h2>You've been logged out</h2>
+    <p class="lead text-muted mb-4">Thank you for visiting Moonwakewares!</p>
+
+    <div>
+        <a href="{% url 'login' %}" class="btn btn-primary me-2">
+            <i class="bi bi-box-arrow-in-right"></i> Login Again
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-house"></i> Go Home
+        </a>
+    </div>
+</div>
+{% endblock %}

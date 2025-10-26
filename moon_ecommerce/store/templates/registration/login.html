@@ -1,0 +1,116 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Login - Moonwakewares{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-section {
+        padding: 5rem 0;
+        min-height: 60vh;
+    }
+
+    .login-card {
+        max-width: 450px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        padding: 3rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-header h2 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .login-header p {
+        color: var(--text-light);
+    }
+
+    .form-control {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 2px solid #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.1);
+    }
+
+    .login-btn {
+        width: 100%;
+        padding: 0.875rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+
+    .helper-links {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .helper-links a {
+        color: var(--primary-color);
+        text-decoration: none;
+        margin: 0 0.5rem;
+    }
+
+    .helper-links a:hover {
+        color: var(--accent-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container login-section">
+    <div class="login-card">
+        <div class="login-header">
+            <h2><i class="bi bi-person-circle"></i> Welcome Back</h2>
+            <p>Please login to continue to checkout</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> Invalid username or password. Please try again.
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="id_username" class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" id="id_username" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label for="id_password" class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" id="id_password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary login-btn">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </button>
+
+            <input type="hidden" name="next" value="{{ next }}">
+        </form>
+
+        <div class="helper-links">
+            <small class="text-muted">
+                Don't have an account? <a href="{% url 'signup' %}?next={{ next }}">Sign up here</a>
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
