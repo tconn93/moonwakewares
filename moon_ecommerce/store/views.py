@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
-from .models import Jewelry, Cart, CartItem, Order, OrderItem
+from .models import Jewelry, Cart, CartItem, Order, OrderItem, Event
 from django.contrib import messages
 from django.conf import settings
 from square import Square
@@ -88,10 +88,12 @@ def checkout(request):
         messages.warning(request, "Your cart is empty.")
         return redirect('cart_detail')
 
-    # Pre-fill form with user's email
+    # Pre-fill form with user's profile data
+    profile = request.user.profile
     context = {
         'cart': cart,
         'user_email': request.user.email,
+        'profile': profile,
         'SQUARE_APPLICATION_ID': settings.SQUARE_APPLICATION_ID,
         'SQUARE_LOCATION_ID': settings.SQUARE_LOCATION_ID,
         'SQUARE_ENVIRONMENT': settings.SQUARE_ENVIRONMENT,
@@ -128,6 +130,22 @@ def process_payment(request):
     billing_zip = request.POST.get('billing_zip')
     billing_country = request.POST.get('billing_country', 'USA')
 
+    # Save/update user profile
+    profile = request.user.profile
+    profile.full_name = full_name
+    profile.phone = phone
+    profile.shipping_street = shipping_street
+    profile.shipping_city = shipping_city
+    profile.shipping_state = shipping_state
+    profile.shipping_zip = shipping_zip
+    profile.shipping_country = shipping_country
+    profile.billing_street = billing_street
+    profile.billing_city = billing_city
+    profile.billing_state = billing_state
+    profile.billing_zip = billing_zip
+    profile.billing_country = billing_country
+    profile.save()
+
     source_id = request.POST.get('source_id')  # This comes from Square Web Payments SDK
 
     # Calculate total
@@ -135,22 +153,21 @@ def process_payment(request):
 
     # Initialize Square client
     client = Square(
-        access_token=settings.SQUARE_ACCESS_TOKEN,
-        environment=settings.SQUARE_ENVIRONMENT,
+        token=settings.SQUARE_ACCESS_TOKEN,
     )
 
     try:
         # Create payment with Square
-        result = client.payments.create_payment(
-            body={
-                "source_id": source_id,
-                "idempotency_key": str(uuid.uuid4()),
-                "amount_money": {
+        result = client.payments.create(
+       
+                source_id= source_id,
+                idempotency_key= str(uuid.uuid4()),
+                amount_money= {
                     "amount": int(total_amount * 100),  # Square uses cents
                     "currency": "USD"
                 },
-                "location_id": settings.SQUARE_LOCATION_ID,
-            }
+                location_id= settings.SQUARE_LOCATION_ID,
+          
         )
 
         if result.is_success():
@@ -217,6 +234,40 @@ def order_history(request):
     orders = Order.objects.filter(user=request.user).prefetch_related('items__jewelry')
     return render(request, 'store/order_history.html', {'orders': orders})
 
+# Custom orders view
+def custom_orders(request):
+    """Display custom orders page with link to JotForm"""
+    return render(request, 'store/custom_orders.html')
+
+# User profile view
+@login_required
+def user_profile(request):
+    """User profile management"""
+    if request.method == 'POST':
+        # Update user profile
+        profile = request.user.profile
+        profile.full_name = request.POST.get('full_name', '')
+        profile.phone = request.POST.get('phone', '')
+        profile.shipping_street = request.POST.get('shipping_street', '')
+        profile.shipping_city = request.POST.get('shipping_city', '')
+        profile.shipping_state = request.POST.get('shipping_state', '')
+        profile.shipping_zip = request.POST.get('shipping_zip', '')
+        profile.shipping_country = request.POST.get('shipping_country', 'USA')
+        profile.billing_street = request.POST.get('billing_street', '')
+        profile.billing_city = request.POST.get('billing_city', '')
+        profile.billing_state = request.POST.get('billing_state', '')
+        profile.billing_zip = request.POST.get('billing_zip', '')
+        profile.billing_country = request.POST.get('billing_country', 'USA')
+        profile.same_billing_shipping = request.POST.get('same_billing_shipping') == 'on'
+        profile.save()
+
+        messages.success(request, 'Your profile has been updated successfully!')
+        return redirect('user_profile')
+
+    return render(request, 'store/user_profile.html', {
+        'profile': request.user.profile
+    })
+
 # User registration view
 def signup(request):
     """User registration"""
@@ -237,3 +288,17 @@ def signup(request):
         form = UserCreationForm()
 
     return render(request, 'registration/signup.html', {'form': form})
+
+# Events view
+def events(request):
+    """Display all active events"""
+    from django.utils import timezone
+    events_list = Event.objects.filter(is_active=True).order_by('date')
+    upcoming_events = events_list.filter(date__gte=timezone.now())
+    past_events = events_list.filter(date__lt=timezone.now())
+
+    context = {
+        'upcoming_events': upcoming_events,
+        'past_events': past_events,
+    }
+    return render(request, 'store/events.html', context)

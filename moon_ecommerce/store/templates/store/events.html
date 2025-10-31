@@ -1,0 +1,191 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Events - Moonwakewares{% endblock %}
+
+{% block extra_css %}
+<style>
+    .events-section {
+        padding: 5rem 0;
+    }
+
+    .event-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .event-image {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+
+    .event-content {
+        padding: 2rem;
+    }
+
+    .event-title {
+        color: var(--primary-color);
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .event-date {
+        color: var(--accent-color);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .event-location {
+        color: var(--text-light);
+        margin-bottom: 1rem;
+    }
+
+    .event-description {
+        color: var(--text-dark);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .event-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+
+    .section-title {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: var(--primary-color);
+    }
+
+    .upcoming-badge {
+        background: var(--accent-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .past-badge {
+        background: var(--text-light);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .no-events {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-light);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container events-section">
+    <h1 class="section-title">Events</h1>
+
+    {% if upcoming_events %}
+    <div class="mb-5">
+        <h2 class="h3 mb-4" style="color: var(--primary-color);">
+            <i class="bi bi-calendar-event"></i> Upcoming Events
+        </h2>
+        <div class="row">
+            {% for event in upcoming_events %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="event-card">
+                    {% if event.image %}
+                    <img src="{{ event.image.url }}" alt="{{ event.title }}" class="event-image">
+                    {% endif %}
+                    <div class="event-content">
+                        <h3 class="event-title">{{ event.title }}</h3>
+                        <div class="event-date">
+                            <i class="bi bi-calendar"></i>
+                            {{ event.date|date:"F j, Y" }} at {{ event.date|time:"g:i A" }}
+                        </div>
+                        {% if event.location %}
+                        <div class="event-location">
+                            <i class="bi bi-geo-alt"></i> {{ event.location }}
+                        </div>
+                        {% endif %}
+                        <div class="event-description">
+                            {{ event.description|truncatechars:150 }}
+                        </div>
+                        <div class="event-meta">
+                            <span class="upcoming-badge">Upcoming</span>
+                            {% if event.max_attendees %}
+                            <span><i class="bi bi-people"></i> Max {{ event.max_attendees }} attendees</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if past_events %}
+    <div class="mb-5">
+        <h2 class="h3 mb-4" style="color: var(--primary-color);">
+            <i class="bi bi-clock-history"></i> Past Events
+        </h2>
+        <div class="row">
+            {% for event in past_events %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="event-card">
+                    {% if event.image %}
+                    <img src="{{ event.image.url }}" alt="{{ event.title }}" class="event-image">
+                    {% endif %}
+                    <div class="event-content">
+                        <h3 class="event-title">{{ event.title }}</h3>
+                        <div class="event-date">
+                            <i class="bi bi-calendar"></i>
+                            {{ event.date|date:"F j, Y" }} at {{ event.date|time:"g:i A" }}
+                        </div>
+                        {% if event.location %}
+                        <div class="event-location">
+                            <i class="bi bi-geo-alt"></i> {{ event.location }}
+                        </div>
+                        {% endif %}
+                        <div class="event-description">
+                            {{ event.description|truncatechars:150 }}
+                        </div>
+                        <div class="event-meta">
+                            <span class="past-badge">Past Event</span>
+                            {% if event.max_attendees %}
+                            <span><i class="bi bi-people"></i> Max {{ event.max_attendees }} attendees</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not upcoming_events and not past_events %}
+    <div class="no-events">
+        <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+        <h3>No Events Available</h3>
+        <p>Check back later for upcoming events and announcements.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

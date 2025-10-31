@@ -1,0 +1,282 @@
+{% extends 'store/base.html' %}
+
+{% block title %}My Profile - Moonwakewares{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 25%, #a855f7 50%, #c084fc 75%, #ddd6fe 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 8s ease infinite;
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .profile-header .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .profile-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-section h3 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .btn-update {
+        background: linear-gradient(135deg, #4c1d95, #7c3aed);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-update:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 29, 149, 0.4);
+        color: white;
+    }
+
+    .profile-info {
+        background: rgba(248, 249, 250, 0.8);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .info-value {
+        color: var(--text-dark);
+    }
+
+    .info-value.empty {
+        color: #6c757d;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1><i class="bi bi-person-circle"></i> My Profile</h1>
+                <p class="lead">Manage your account information and shipping details</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="profile-info">
+                <h4><i class="bi bi-info-circle"></i> Account Information</h4>
+                <div class="info-item">
+                    <span class="info-label">Username:</span>
+                    <span class="info-value">{{ user.username }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">{{ user.email }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Member Since:</span>
+                    <span class="info-value">{{ user.date_joined|date:"M d, Y" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Login:</span>
+                    <span class="info-value">{{ user.last_login|date:"M d, Y H:i" }}</span>
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <h4><i class="bi bi-gear"></i> Quick Actions</h4>
+                <a href="{% url 'order_history' %}" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="bi bi-clock-history"></i> Order History
+                </a>
+                <a href="{% url 'cart_detail' %}" class="btn btn-outline-success w-100">
+                    <i class="bi bi-bag"></i> View Cart
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <form method="post" action="{% url 'user_profile' %}">
+                {% csrf_token %}
+
+                <!-- Personal Information -->
+                <div class="profile-section">
+                    <h3><i class="bi bi-person"></i> Personal Information</h3>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="full_name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ profile.full_name|default:'' }}" placeholder="Enter your full name">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ profile.phone|default:'' }}" placeholder="Enter your phone number">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipping Address -->
+                <div class="profile-section">
+                    <h3><i class="bi bi-truck"></i> Shipping Address</h3>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="shipping_street" class="form-label">Street Address</label>
+                            <input type="text" class="form-control" id="shipping_street" name="shipping_street" value="{{ profile.shipping_street|default:'' }}" placeholder="Enter street address">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="shipping_city" class="form-label">City</label>
+                            <input type="text" class="form-control" id="shipping_city" name="shipping_city" value="{{ profile.shipping_city|default:'' }}" placeholder="Enter city">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="shipping_state" class="form-label">State</label>
+                            <input type="text" class="form-control" id="shipping_state" name="shipping_state" value="{{ profile.shipping_state|default:'' }}" placeholder="Enter state">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="shipping_zip" class="form-label">ZIP Code</label>
+                            <input type="text" class="form-control" id="shipping_zip" name="shipping_zip" value="{{ profile.shipping_zip|default:'' }}" placeholder="Enter ZIP code">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="shipping_country" class="form-label">Country</label>
+                            <input type="text" class="form-control" id="shipping_country" name="shipping_country" value="{{ profile.shipping_country|default:'USA' }}" placeholder="Enter country">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Address -->
+                <div class="profile-section">
+                    <h3><i class="bi bi-receipt"></i> Billing Address</h3>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="same_billing_shipping" name="same_billing_shipping" {% if profile.same_billing_shipping %}checked{% endif %}>
+                            <label class="form-check-label" for="same_billing_shipping">
+                                Same as shipping address
+                            </label>
+                        </div>
+                    </div>
+                    <div id="billing-fields" {% if profile.same_billing_shipping %}style="display: none;"{% endif %}>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="billing_street" class="form-label">Street Address</label>
+                                <input type="text" class="form-control" id="billing_street" name="billing_street" value="{{ profile.billing_street|default:'' }}" placeholder="Enter street address">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="billing_city" class="form-label">City</label>
+                                <input type="text" class="form-control" id="billing_city" name="billing_city" value="{{ profile.billing_city|default:'' }}" placeholder="Enter city">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="billing_state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="billing_state" name="billing_state" value="{{ profile.billing_state|default:'' }}" placeholder="Enter state">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="billing_zip" class="form-label">ZIP Code</label>
+                                <input type="text" class="form-control" id="billing_zip" name="billing_zip" value="{{ profile.billing_zip|default:'' }}" placeholder="Enter ZIP code">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="billing_country" class="form-label">Country</label>
+                                <input type="text" class="form-control" id="billing_country" name="billing_country" value="{{ profile.billing_country|default:'USA' }}" placeholder="Enter country">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-update">
+                        <i class="bi bi-check-circle"></i> Update Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle "same as shipping" checkbox
+    const sameAsShipping = document.getElementById('same_billing_shipping');
+    const billingFields = document.getElementById('billing-fields');
+
+    function toggleBillingFields() {
+        if (sameAsShipping.checked) {
+            billingFields.style.display = 'none';
+            // Copy shipping to billing
+            document.getElementById('billing_street').value = document.getElementById('shipping_street').value;
+            document.getElementById('billing_city').value = document.getElementById('shipping_city').value;
+            document.getElementById('billing_state').value = document.getElementById('shipping_state').value;
+            document.getElementById('billing_zip').value = document.getElementById('shipping_zip').value;
+            document.getElementById('billing_country').value = document.getElementById('shipping_country').value;
+        } else {
+            billingFields.style.display = 'block';
+        }
+    }
+
+    sameAsShipping.addEventListener('change', toggleBillingFields);
+
+    // Sync shipping fields to billing when "same as shipping" is checked
+    ['shipping_street', 'shipping_city', 'shipping_state', 'shipping_zip', 'shipping_country'].forEach(fieldId => {
+        document.getElementById(fieldId).addEventListener('input', function() {
+            if (sameAsShipping.checked) {
+                const billingFieldId = fieldId.replace('shipping_', 'billing_');
+                document.getElementById(billingFieldId).value = this.value;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

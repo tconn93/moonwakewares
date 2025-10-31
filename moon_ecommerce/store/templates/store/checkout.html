@@ -109,7 +109,7 @@
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             <label for="full_name" class="form-label">Full Name *</label>
-                            <input type="text" class="form-control" id="full_name" name="full_name" required>
+                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ profile.full_name|default:'' }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Email Address *</label>
@@ -117,7 +117,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="phone" class="form-label">Phone Number *</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ profile.phone|default:'' }}" required>
                         </div>
                     </div>
                 </div>
@@ -128,23 +128,23 @@
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             <label for="shipping_street" class="form-label">Street Address *</label>
-                            <input type="text" class="form-control" id="shipping_street" name="shipping_street" required>
+                            <input type="text" class="form-control" id="shipping_street" name="shipping_street" value="{{ profile.shipping_street|default:'' }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="shipping_city" class="form-label">City *</label>
-                            <input type="text" class="form-control" id="shipping_city" name="shipping_city" required>
+                            <input type="text" class="form-control" id="shipping_city" name="shipping_city" value="{{ profile.shipping_city|default:'' }}" required>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="shipping_state" class="form-label">State *</label>
-                            <input type="text" class="form-control" id="shipping_state" name="shipping_state" required>
+                            <input type="text" class="form-control" id="shipping_state" name="shipping_state" value="{{ profile.shipping_state|default:'' }}" required>
                         </div>
                         <div class="col-md-3 mb-3">
                             <label for="shipping_zip" class="form-label">ZIP Code *</label>
-                            <input type="text" class="form-control" id="shipping_zip" name="shipping_zip" required>
+                            <input type="text" class="form-control" id="shipping_zip" name="shipping_zip" value="{{ profile.shipping_zip|default:'' }}" required>
                         </div>
                         <div class="col-md-12 mb-3">
                             <label for="shipping_country" class="form-label">Country *</label>
-                            <input type="text" class="form-control" id="shipping_country" name="shipping_country" value="USA" required>
+                            <input type="text" class="form-control" id="shipping_country" name="shipping_country" value="{{ profile.shipping_country|default:'USA' }}" required>
                         </div>
                     </div>
                 </div>
@@ -164,23 +164,23 @@
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label for="billing_street" class="form-label">Street Address *</label>
-                                <input type="text" class="form-control" id="billing_street" name="billing_street">
+                                <input type="text" class="form-control" id="billing_street" name="billing_street" value="{{ profile.billing_street|default:'' }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="billing_city" class="form-label">City *</label>
-                                <input type="text" class="form-control" id="billing_city" name="billing_city">
+                                <input type="text" class="form-control" id="billing_city" name="billing_city" value="{{ profile.billing_city|default:'' }}">
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="billing_state" class="form-label">State *</label>
-                                <input type="text" class="form-control" id="billing_state" name="billing_state">
+                                <input type="text" class="form-control" id="billing_state" name="billing_state" value="{{ profile.billing_state|default:'' }}">
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label for="billing_zip" class="form-label">ZIP Code *</label>
-                                <input type="text" class="form-control" id="billing_zip" name="billing_zip">
+                                <input type="text" class="form-control" id="billing_zip" name="billing_zip" value="{{ profile.billing_zip|default:'' }}">
                             </div>
                             <div class="col-md-12 mb-3">
                                 <label for="billing_country" class="form-label">Country *</label>
-                                <input type="text" class="form-control" id="billing_country" name="billing_country" value="USA">
+                                <input type="text" class="form-control" id="billing_country" name="billing_country" value="{{ profile.billing_country|default:'USA' }}">
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,5 @@
 from django.urls import path
+from django.contrib.auth.views import LogoutView, LoginView
 from . import views
 
 urlpatterns = [
@@ -6,6 +7,8 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('products/', views.product_list, name='product_list'),
     path('products/<int:pk>/', views.product_detail, name='product_detail'),
+    path('events/', views.events, name='events'),
+    path('custom-orders/', views.custom_orders, name='custom_orders'),
     path('cart/', views.cart_detail, name='cart_detail'),
     path('cart/add/<int:jewelry_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/update/<int:cart_item_id>/', views.update_cart, name='update_cart'),
@@ -18,7 +21,10 @@ urlpatterns = [
     path('orders/history/', views.order_history, name='order_history'),
 
     # Authentication URLs
+    path('accounts/login/', LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('accounts/signup/', views.signup, name='signup'),
+    path('accounts/logout/', LogoutView.as_view(), name='logout'),
+    path('profile/', views.user_profile, name='user_profile'),
 
     # Existing API URLs (if you added them previously)
     # path('api/jewelry/', ...),

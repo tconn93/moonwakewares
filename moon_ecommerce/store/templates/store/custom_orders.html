@@ -1,0 +1,275 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Custom Orders - Moonwakewares{% endblock %}
+
+{% block extra_css %}
+<style>
+    .custom-orders-hero {
+        background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 25%, #a855f7 50%, #c084fc 75%, #ddd6fe 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 8s ease infinite;
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .custom-orders-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+        opacity: 0.3;
+    }
+
+    .custom-orders-hero .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .custom-orders-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 3rem;
+        margin-bottom: 3rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-order-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .custom-order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .custom-order-icon {
+        font-size: 3rem;
+        color: var(--accent-color);
+        margin-bottom: 1rem;
+    }
+
+    .jotform-button {
+        background: linear-gradient(135deg, #4c1d95, #7c3aed);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(76, 29, 149, 0.3);
+    }
+
+    .jotform-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(76, 29, 149, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .process-step {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4c1d95, #7c3aed);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .step-content h5 {
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, #4c1d95, #7c3aed);
+    }
+
+    .faq-item {
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+        border-left: 4px solid var(--accent-color);
+    }
+
+    .faq-question {
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .faq-answer {
+        color: var(--text-dark);
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="custom-orders-hero">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1>Custom Jewelry Orders</h1>
+                <p class="lead">Create your dream piece with our expert craftsmanship. Every detail personalized just for you.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="custom-orders-content">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 style="color: var(--primary-color); margin-bottom: 2rem;">Design Your Perfect Piece</h2>
+                <p class="lead text-muted mb-4">
+                    Have a specific vision in mind? Our skilled artisans can bring your ideas to life.
+                    From custom engravings to unique designs, we work with you to create one-of-a-kind jewelry.
+                </p>
+                <!-- Replace the href below with your actual JotForm URL -->
+                <a href="https://form.jotform.com/your-form-link" class="jotform-button" target="_blank">
+                    <i class="bi bi-pencil-square"></i>
+                    Start Your Custom Order
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="custom-order-card text-center">
+                <i class="bi bi-palette custom-order-icon"></i>
+                <h4>Custom Designs</h4>
+                <p class="text-muted">Bring your sketches, photos, or ideas to life with our expert design team.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="custom-order-card text-center">
+                <i class="bi bi-gem custom-order-icon"></i>
+                <h4>Premium Materials</h4>
+                <p class="text-muted">Choose from gold, silver, platinum, and a wide selection of gemstones.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="custom-order-card text-center">
+                <i class="bi bi-tools custom-order-icon"></i>
+                <h4>Expert Craftsmanship</h4>
+                <p class="text-muted">Each piece is handcrafted by skilled artisans with decades of experience.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="custom-orders-content">
+                <h3 style="color: var(--primary-color); margin-bottom: 2rem;">How It Works</h3>
+                <div class="timeline">
+                    <div class="process-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h5>Share Your Vision</h5>
+                            <p class="text-muted">Fill out our custom order form with your ideas, preferences, and budget.</p>
+                        </div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h5>Design Consultation</h5>
+                            <p class="text-muted">Our design team will contact you to discuss details and create initial sketches.</p>
+                        </div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h5>Approval & Production</h5>
+                            <p class="text-muted">Review designs, approve final plans, and we'll begin crafting your piece.</p>
+                        </div>
+                    </div>
+                    <div class="process-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h5>Delivery</h5>
+                            <p class="text-muted">Your custom piece is carefully packaged and delivered to your doorstep.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="custom-orders-content">
+                <h3 style="color: var(--primary-color); margin-bottom: 2rem;">Frequently Asked Questions</h3>
+                <div class="faq-item">
+                    <div class="faq-question">How long does a custom order take?</div>
+                    <div class="faq-answer">Most custom pieces take 4-6 weeks from design approval to completion, depending on complexity.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Do you offer rush orders?</div>
+                    <div class="faq-answer">Yes, we can accommodate rush orders for an additional fee. Contact us to discuss timelines.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What's the minimum order value?</div>
+                    <div class="faq-answer">Custom orders start at $500. This covers the design consultation and premium craftsmanship.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Can I see progress photos?</div>
+                    <div class="faq-answer">Absolutely! We provide regular updates and photos throughout the creation process.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <div class="custom-orders-content">
+            <h3 style="color: var(--primary-color); margin-bottom: 1.5rem;">Ready to Create Something Special?</h3>
+            <p class="lead text-muted mb-4">Let's bring your vision to life. Every great piece starts with a conversation.</p>
+            <!-- Replace the href below with your actual JotForm URL -->
+            <a href="https://form.jotform.com/your-form-link" class="jotform-button" target="_blank">
+                <i class="bi bi-arrow-right-circle"></i>
+                Begin Your Custom Order
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
