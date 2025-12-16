@@ -110,6 +110,88 @@
     .breadcrumb-item a:hover {
         color: var(--accent-color);
     }
+
+    .variation-section {
+        margin-bottom: 2rem;
+    }
+
+    .variation-label {
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 0.75rem;
+        font-size: 1.1rem;
+    }
+
+    .variation-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .variation-option {
+        position: relative;
+    }
+
+    .variation-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .variation-option label {
+        display: block;
+        padding: 0.75rem 1.25rem;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-color: white;
+        font-weight: 500;
+        color: var(--text-light);
+    }
+
+    .variation-option input[type="radio"]:checked + label {
+        border-color: var(--accent-color);
+        background-color: var(--accent-color);
+        color: white;
+    }
+
+    .variation-option label:hover {
+        border-color: var(--accent-color);
+    }
+
+    .color-swatch {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px #dee2e6;
+        vertical-align: middle;
+    }
+
+    .variation-price-adjustment {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        margin-left: 0.5rem;
+    }
+
+    .selected-variation-price {
+        display: none;
+        font-size: 1.2rem;
+        color: var(--text-light);
+        margin-top: 0.5rem;
+    }
+
+    .variation-error {
+        display: none;
+        padding: 0.75rem;
+        background-color: #f8d7da;
+        color: #721c24;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
 </style>
 {% endblock %}
 
@@ -143,6 +225,41 @@
                     {{ jewelry.description|linebreaks }}
                 </div>
 
+                {% if variations_by_type %}
+                <div class="variation-section">
+                    <div class="variation-error" id="variation-error">
+                        Please select all options before adding to cart.
+                    </div>
+
+                    {% for variation_type, options in variations_by_type.items %}
+                    <div class="mb-3">
+                        <div class="variation-label">{{ variation_type.display_name }}:</div>
+                        <div class="variation-options">
+                            {% for option in options %}
+                            <div class="variation-option">
+                                <input
+                                    type="radio"
+                                    name="variation_{{ variation_type.id }}"
+                                    id="option_{{ option.id }}"
+                                    value="{{ option.id }}"
+                                    data-variation-type="{{ variation_type.id }}"
+                                    class="variation-input">
+                                <label for="option_{{ option.id }}">
+                                    {% if option.color_hex %}
+                                    <span class="color-swatch" style="background-color: {{ option.color_hex }};"></span>
+                                    {% endif %}
+                                    {{ option.display_value|default:option.value }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <input type="hidden" id="selected-variation-id" name="variation_id" value="">
+                </div>
+                {% endif %}
+
                 <div class="product-features">
                     <h5>Product Features</h5>
                     <div class="feature-item">
@@ -164,9 +281,9 @@
                 </div>
 
                 <div class="product-actions">
-                    <a href="{% url 'add_to_cart' jewelry.id %}" class="btn btn-success">
+                    <button id="add-to-cart-btn" class="btn btn-success">
                         <i class="bi bi-cart-plus"></i> Add to Cart
-                    </a>
+                    </button>
                     <a href="{% url 'product_list' %}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Continue Shopping
                     </a>
@@ -175,4 +292,87 @@
         </div>
     </div>
 </div>
+
+{% if variations_by_type %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const variationInputs = document.querySelectorAll('.variation-input');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    const variationError = document.getElementById('variation-error');
+    const jewelryId = {{ jewelry.id }};
+
+    // Product variations data from server
+    const productVariations = [
+        {% for variation in product_variations %}
+        {
+            id: {{ variation.id }},
+            options: [{% for option in variation.variation_options.all %}{{ option.id }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            price: {{ variation.total_price }},
+            sku: "{{ variation.sku }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    // Handle variation selection
+    variationInputs.forEach(input => {
+        input.addEventListener('change', updateSelectedVariation);
+    });
+
+    function updateSelectedVariation() {
+        const selectedOptions = Array.from(document.querySelectorAll('.variation-input:checked'))
+            .map(input => parseInt(input.value));
+
+        // Find matching variation
+        const matchingVariation = productVariations.find(variation => {
+            return variation.options.length === selectedOptions.length &&
+                   variation.options.every(opt => selectedOptions.includes(opt));
+        });
+
+        if (matchingVariation) {
+            document.getElementById('selected-variation-id').value = matchingVariation.id;
+            variationError.style.display = 'none';
+        } else {
+            document.getElementById('selected-variation-id').value = '';
+        }
+    }
+
+    // Handle Add to Cart click
+    addToCartBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const variationId = document.getElementById('selected-variation-id').value;
+
+        // Check if all variations are selected
+        const totalVariationTypes = {{ variations_by_type|length }};
+        const selectedVariationTypes = document.querySelectorAll('.variation-input:checked').length;
+
+        if (selectedVariationTypes < totalVariationTypes) {
+            variationError.style.display = 'block';
+            variationError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // Redirect to add to cart with variation
+        if (variationId) {
+            window.location.href = `/cart/add/${jewelryId}/?variation_id=${variationId}`;
+        } else {
+            variationError.textContent = 'This combination is not available. Please select a different option.';
+            variationError.style.display = 'block';
+            variationError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+});
+</script>
+{% else %}
+<script>
+// No variations - simple add to cart
+document.addEventListener('DOMContentLoaded', function() {
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    addToCartBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = "{% url 'add_to_cart' jewelry.id %}";
+    });
+});
+</script>
+{% endif %}
 {% endblock %}

@@ -1,14 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-# Create your models here.
-
-from django.db import models
-from django.contrib.auth.models import User
-from django.utils.text import slugify
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 
 class UserProfile(models.Model):
@@ -67,7 +60,9 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    # Only save profile for existing users (not during creation)
+    if not kwargs.get('created', False) and hasattr(instance, 'profile'):
+        instance.profile.save()
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -153,18 +148,27 @@ class ProductVariation(models.Model):
         return self.jewelry.price + self.price_adjustment
 
     def save(self, *args, **kwargs):
-        # Generate SKU if not provided
-        if not self.sku:
-            options_str = "_".join(sorted([opt.value.lower().replace(" ", "_") for opt in self.variation_options.all()]))
-            self.sku = f"{self.jewelry.name.lower().replace(' ', '_')}_{options_str}"
-
-        # Check for duplicate variations
-        existing = ProductVariation.objects.filter(jewelry=self.jewelry).exclude(pk=self.pk)
-        for variation in existing:
-            if set(variation.variation_options.all()) == set(self.variation_options.all()):
-                raise ValueError("A variation with these options already exists for this jewelry item.")
-
+        # Save the instance first so it has a primary key
         super().save(*args, **kwargs)
+
+# Signal to handle ProductVariation M2M changes
+@receiver(m2m_changed, sender=ProductVariation.variation_options.through)
+def handle_variation_options_changed(sender, instance, action, **kwargs):
+    """
+    Handle SKU generation after variation options are set.
+    This runs after M2M relationships are saved, avoiding RecursionError.
+    """
+    if action == "post_add" or action == "post_remove" or action == "post_clear":
+        # Generate SKU if not provided or if it needs updating
+        if instance.variation_options.exists():
+            options_str = "_".join(sorted([opt.value.lower().replace(" ", "_") for opt in instance.variation_options.all()]))
+            new_sku = f"{instance.jewelry.name.lower().replace(' ', '_')}_{options_str}"
+
+            # Only update if SKU is empty or auto-generated (contains jewelry name)
+            if not instance.sku or instance.jewelry.name.lower().replace(' ', '_') in instance.sku.lower():
+                instance.sku = new_sku
+                # Use update() to avoid triggering save() method and potential recursion
+                ProductVariation.objects.filter(pk=instance.pk).update(sku=new_sku)
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)

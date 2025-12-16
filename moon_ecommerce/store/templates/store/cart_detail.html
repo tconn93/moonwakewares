@@ -201,7 +201,9 @@
         <div class="col-lg-8">
             {% for item in cart.cartitem_set.all %}
             <div class="cart-item">
-                {% if item.jewelry.image %}
+                {% if item.product_variation and item.product_variation.image %}
+                <img src="{{ item.product_variation.image.url }}" class="cart-item-image" alt="{{ item.jewelry.name }}">
+                {% elif item.jewelry.image %}
                 <img src="{{ item.jewelry.image.url }}" class="cart-item-image" alt="{{ item.jewelry.name }}">
                 {% else %}
                 <div class="cart-item-image-placeholder">
@@ -213,7 +215,14 @@
                     <div class="cart-item-name">
                         <a href="{% url 'product_detail' item.jewelry.pk %}">{{ item.jewelry.name }}</a>
                     </div>
-                    <div class="cart-item-price">${{ item.jewelry.price }} each</div>
+                    {% if item.product_variation %}
+                    <div class="text-muted small mb-1">
+                        {% for option in item.product_variation.variation_options.all %}
+                            <span class="badge bg-secondary">{{ option.variation_type.name }}: {{ option.value }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div class="cart-item-price">${{ item.unit_price }} each</div>
                 </div>
 
                 <div class="cart-item-actions">

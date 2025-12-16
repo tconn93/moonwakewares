@@ -3,10 +3,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
-from .models import Jewelry, Cart, CartItem, Order, OrderItem, Event
+from .models import Jewelry, Cart, CartItem, Order, OrderItem, Event, VariationOption, ProductVariation
 from django.contrib import messages
 from django.conf import settings
 from square import Square
+from square.environment import SquareEnvironment
 import uuid
 import logging
 
@@ -22,7 +23,25 @@ def product_list(request):
 
 def product_detail(request, pk):
     jewelry = get_object_or_404(Jewelry, pk=pk)
-    return render(request, 'store/product_detail.html', {'jewelry': jewelry})
+
+    # Get available variations and organize by variation type
+    variations_by_type = {}
+    if jewelry.has_variations:
+        for variation_type in jewelry.variation_types.all():
+            # Get all unique options for this variation type across all product variations
+            options = VariationOption.objects.filter(
+                variation_type=variation_type,
+                product_variations__jewelry=jewelry,
+                product_variations__is_available=True
+            ).distinct()
+            variations_by_type[variation_type] = options
+
+    context = {
+        'jewelry': jewelry,
+        'variations_by_type': variations_by_type,
+        'product_variations': jewelry.product_variations.filter(is_available=True).prefetch_related('variation_options')
+    }
+    return render(request, 'store/product_detail.html', context)
 
 # Helper function to get or create a cart
 def get_cart(request):
@@ -46,14 +65,34 @@ def cart_detail(request):
 def add_to_cart(request, jewelry_id):
     jewelry = get_object_or_404(Jewelry, id=jewelry_id)
     cart = get_cart(request)
-    
-    # Check if the item is already in the cart
-    cart_item, created = CartItem.objects.get_or_create(cart=cart, jewelry=jewelry)
+
+    # Get variation if specified
+    variation_id = request.GET.get('variation_id')
+    product_variation = None
+
+    if variation_id:
+        product_variation = get_object_or_404(ProductVariation, id=variation_id, jewelry=jewelry)
+        # Check if the item with this variation is already in the cart
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            jewelry=jewelry,
+            product_variation=product_variation
+        )
+        variation_info = f" ({product_variation})"
+    else:
+        # Check if the item is already in the cart (without variation)
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=cart,
+            jewelry=jewelry,
+            product_variation=None
+        )
+        variation_info = ""
+
     if not created:
         cart_item.quantity += 1
         cart_item.save()
-    
-    messages.success(request, f"{jewelry.name} added to cart!")
+
+    messages.success(request, f"{jewelry.name}{variation_info} added to cart!")
     return redirect('cart_detail')
 
 # Update cart item quantity
@@ -153,6 +192,7 @@ def process_payment(request):
 
     # Initialize Square client
     client = Square(
+           environment=SquareEnvironment.SANDBOX,
         token=settings.SQUARE_ACCESS_TOKEN,
     )
 
@@ -170,9 +210,9 @@ def process_payment(request):
           
         )
 
-        if result.is_success():
-            payment_response = result.body
-            payment_id = payment_response['payment']['id']
+        if result.payment:
+            payment_response = result.payment
+            payment_id = payment_response.id
 
             # Create order
             order = Order.objects.create(
