@@ -99,8 +99,15 @@ class CartItemAdmin(admin.ModelAdmin):
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ('jewelry', 'product_variation', 'quantity', 'price', 'total_price', 'variation_data')
+    readonly_fields = ('jewelry', 'product_variation', 'quantity', 'price', 'get_total_price', 'variation_data')
     can_delete = False
+
+    def get_total_price(self, obj):
+        """Safe total price display that handles None prices"""
+        if obj and obj.pk:
+            return f"${obj.total_price}"
+        return "-"
+    get_total_price.short_description = 'Total Price'
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -110,6 +117,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_editable = ('status',)
     readonly_fields = ('created_at', 'updated_at', 'square_payment_id')
     inlines = [OrderItemInline]
+    actions = ['mark_as_shipped']
 
     fieldsets = (
         ('Order Information', {
@@ -129,12 +137,29 @@ class OrderAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user').prefetch_related('items__jewelry')
 
+    @admin.action(description='Mark selected orders as shipped')
+    def mark_as_shipped(self, request, queryset):
+        """Admin action to mark orders as shipped"""
+        updated_count = queryset.update(status='shipped')
+        self.message_user(
+            request,
+            f'{updated_count} order(s) successfully marked as shipped.',
+            level='success'
+        )
+
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ('order', 'jewelry', 'product_variation', 'quantity', 'price', 'total_price')
+    list_display = ('order', 'jewelry', 'product_variation', 'quantity', 'price', 'get_total_price')
     list_filter = ('order', 'jewelry')
     search_fields = ('jewelry__name', 'product_variation__sku', 'order__id')
-    readonly_fields = ('total_price', 'variation_data')
+    readonly_fields = ('get_total_price', 'variation_data')
+
+    def get_total_price(self, obj):
+        """Safe total price display that handles None prices"""
+        if obj and obj.price is not None:
+            return f"${obj.total_price}"
+        return "-"
+    get_total_price.short_description = 'Total Price'
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):

@@ -211,6 +211,7 @@ class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('processing', 'Processing'),
+        ('shipped', 'Shipped'),
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     ]
@@ -267,9 +268,18 @@ class OrderItem(models.Model):
 
     @property
     def total_price(self):
+        if self.price is None:
+            return 0
         return self.price * self.quantity
 
     def save(self, *args, **kwargs):
+        # Auto-set price if not provided
+        if self.price is None:
+            if self.product_variation:
+                self.price = self.product_variation.total_price
+            else:
+                self.price = self.jewelry.price
+
         # Store variation data as JSON for historical reference
         if self.product_variation and not self.variation_data:
             self.variation_data = {

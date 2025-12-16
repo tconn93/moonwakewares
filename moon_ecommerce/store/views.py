@@ -232,7 +232,7 @@ def process_payment(request):
                 billing_country=billing_country,
                 total_amount=total_amount,
                 square_payment_id=payment_id,
-                status='completed'
+                status='processing'
             )
 
             # Create order items
@@ -240,8 +240,9 @@ def process_payment(request):
                 OrderItem.objects.create(
                     order=order,
                     jewelry=cart_item.jewelry,
+                    product_variation=cart_item.product_variation,
                     quantity=cart_item.quantity,
-                    price=cart_item.jewelry.price
+                    price=cart_item.unit_price  # Use unit_price to account for variations
                 )
 
             # Clear cart
